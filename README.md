@@ -100,7 +100,7 @@ Open your browser and navigate to:
 
 To access the management section:
 
-👉 **http://192.168.4.1/login/**
+👉 **http://192.168.4.1/en/login/**
 
 | Field | Default Value |
 |-------|---------------|
