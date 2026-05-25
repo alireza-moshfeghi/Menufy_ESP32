@@ -87,8 +87,8 @@ git clone https://github.com/alireza-moshfeghi/Menufy_ESP32.git
 
 | Setting | Value |
 |---------|-------|
-| SSID | \`Menufy_Restaurant\` |
-| Password | (none - open network) |
+| SSID | Coffee Shop |
+| Password |  |
 
 ### Access the Web Interface
 
@@ -104,8 +104,8 @@ To access the management section:
 
 | Field | Default Value |
 |-------|---------------|
-| Username | \`admin\` |
-| Password | \`admin\` |
+| Username | admin |
+| Password | admin |
 
 > ⚠️ Important: Change the default password after your first login!
 
@@ -138,8 +138,8 @@ After logging in as admin, you can:
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin | \`admin\` | \`admin\` |
-| Regular User | (not required) | (no login needed for viewing menu) |
+| Admin | admin | admin |
+| Regular User | user | user |
 
 **Security Note:** Change the default admin password immediately after first login. Go to Settings > Change Password.
 
@@ -161,21 +161,6 @@ This project is intended for testing, research, and educational purposes only. I
 ## 📄 License
 
 This project is licensed under the MIT License. You are free to use, modify, and distribute this software with proper credit to the author.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-
----
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
 
 ---
 
