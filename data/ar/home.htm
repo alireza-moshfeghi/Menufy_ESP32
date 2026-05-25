@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .admin-container {
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            transition: none !important;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .admin-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .admin-btn:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .logout-btn {
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .admin-container {
+                padding: 20px;
+                width: 95%;
+                max-width: 300px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+
+            .admin-btn {
+                padding: 12px;
+                font-size: 0.9em;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <h1 class="header-title">لوحة الإدارة</h1>
+        <a id="users" href="/ar/users/" class="admin-btn action-btn">👥 العملاء</a>
+        <a id="orders" href="/ar/orders/" class="admin-btn action-btn">📋 الطلبات</a>
+        <a id="products" href="/ar/products/" class="admin-btn action-btn">📦 المنتجات</a>
+        <a id="categorys" href="/ar/categorys/" class="admin-btn action-btn">📂 التصنيفات</a>
+        <a id="modules" href="/ar/modules/" class="admin-btn action-btn">⚙️ إعدادات الوحدة</a>
+        <a id="settings" href="/ar/settings/" class="admin-btn action-btn">🎨 إعدادات المظهر</a>
+        <a id="account" href="/ar/account/" class="admin-btn action-btn">👤 إعدادات الحساب</a>
+        <a id="logout" href="/ar/logout/" class="admin-btn logout-btn">🚪 خروج</a>
+    </div>
+    <script>
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "user") {
+                        document.getElementById("modules").setAttribute("style", "display: none;");
+                        document.getElementById("settings").setAttribute("style", "display: none;");
+                        document.getElementById("account").setAttribute("style", "display: none;");
+                    }
+                    else if (data.status == "invalid") {
+                        window.location.href = '/ar/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/ar/login/';
+        }
+        fetch('/ar/home/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    document.title = data.name + " | لوحة الإدارة";
+                }
+                if (data.bgcolor) {
+                    document.body.style.backgroundColor = data.bgcolor;
+                    let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                    let rgb = bodyColor.match(/\d+/g).map(Number);
+                    let lighterR = Math.min(255, rgb[0] + 30);
+                    let lighterG = Math.min(255, rgb[1] + 30);
+                    let lighterB = Math.min(255, rgb[2] + 30);
+                    let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                    let container = document.querySelector('.admin-container');
+                    container.style.backgroundColor = newColor;
+                }
+                if (data.fgcolor) {
+                    document.body.style.color = data.fgcolor;
+                    document.querySelectorAll('.admin-btn').forEach(btn => {
+                        btn.style.color = data.fgcolor;
+                    });
+                }
+                if (data.navcolor) {
+                    document.querySelectorAll('.admin-btn').forEach(btn => {
+                        btn.style.backgroundColor = data.navcolor;
+                    });
+                    let meta = document.createElement('meta');
+                    meta.name = "theme-color";
+                    meta.content = data.navcolor;
+                    document.head.appendChild(meta);
+                }
+                if (data.catcolor) {
+                    document.querySelector('.header-title').style.color = data.catcolor;
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في استقبال البيانات:', error);
+            });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+This firmware turns the ESP32 module into a web-based order taker for restaurants. Customers can view the digital menu and place their orders via Wi-Fi connection (access point).

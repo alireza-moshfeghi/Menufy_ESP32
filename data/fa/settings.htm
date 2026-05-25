@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1em;
+            min-width: 100px;
+        }
+
+        .settings-container {
+            width: 95%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            transition: none !important;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .settings-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .settings-header p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .color-picker-label {
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-input {
+            width: 50px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .color-hex {
+            font-size: 0.85em;
+            font-family: monospace;
+            width: 80px;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            direction: ltr;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: right;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            direction: rtl;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #888;
+        }
+
+        .save-btn,
+        .cancel-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .settings-container {
+                padding: 20px;
+            }
+
+            .color-picker-group {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .color-picker-wrapper {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>...در حال بارگزاری</span>
+        </div>
+    </div>
+    <div class="settings-container" id="settingsContainer">
+        <div class="settings-header">
+            <h1 class="header-title">تنظیمات ظاهری</h1>
+            <p>رنگ‌ها و ظاهر صفحه فروشگاه را سفارشی کنید</p>
+        </div>
+        <form onsubmit="saveSettings(event)" id="settingsForm">
+            <div class="form-group">
+                <label>:نام فروشگاه</label>
+                <input type="text" id="storeName" placeholder="نام فروشگاه را وارد کنید">
+            </div>
+            <div class="form-group">
+                <label>:واحد پول</label>
+                <input type="text" id="storeUnit" placeholder="واحد پول را وارد کنید">
+            </div>
+            <div class="color-picker-group">
+                <span class="color-picker-label">🎨 رنگ پس زمینه</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="bgcolorPicker" class="color-input" value="#ffffff"
+                        onchange="updateHex('bgcolor')">
+                    <input type="text" id="bgcolorHex" class="color-hex" value="#ffffff"
+                        onchange="updatePicker('bgcolor')" maxlength="7">
+                </div>
+            </div>
+            <div class="color-picker-group">
+                <span class="color-picker-label">📱 رنگ نوبار</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="navcolorPicker" class="color-input" value="#ffffff"
+                        onchange="updateHex('navcolor')">
+                    <input type="text" id="navcolorHex" class="color-hex" value="#ffffff"
+                        onchange="updatePicker('navcolor')" maxlength="7">
+                </div>
+            </div>
+            <div class="color-picker-group">
+                <span class="color-picker-label">✏️ رنگ نوشت‌ها</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="fgcolorPicker" class="color-input" value="#ffffff"
+                        onchange="updateHex('fgcolor')">
+                    <input type="text" id="fgcolorHex" class="color-hex" value="#ffffff"
+                        onchange="updatePicker('fgcolor')" maxlength="7">
+                </div>
+            </div>
+            <div class="color-picker-group">
+                <span class="color-picker-label">📁 رنگ دسته بندی‌ها</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="catcolorPicker" class="color-input" value="#ffffff"
+                        onchange="updateHex('catcolor')">
+                    <input type="text" id="catcolorHex" class="color-hex" value="#ffffff"
+                        onchange="updatePicker('catcolor')" maxlength="7">
+                </div>
+            </div>
+            <div class="color-picker-group">
+                <span class="color-picker-label">🛒 رنگ محصولات</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="procolorPicker" class="color-input" value="#ffffff"
+                        onchange="updateHex('procolor')">
+                    <input type="text" id="procolorHex" class="color-hex" value="#ffffff"
+                        onchange="updatePicker('procolor')" maxlength="7">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn"
+                    onclick="window.location.href='/fa/home/'">بازگشت</button>
+                <button type="submit" class="modal-btn save-btn">ذخیره</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/fa/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "invalid" || data.status == "user") {
+                        window.location.href = '/fa/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/fa/login/';
+        }
+        let currentSettings = {
+            name: '',
+            bgcolor: '#ffffff',
+            navcolor: '#ffffff',
+            fgcolor: '#ffffff',
+            catcolor: '#ffffff',
+            procolor: '#ffffff'
+        };
+        function getToken() {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                return token.split('=')[1];
+            }
+            return null;
+        }
+        function updateHex(type) {
+            const picker = document.getElementById(type + 'Picker');
+            const hexInput = document.getElementById(type + 'Hex');
+            hexInput.value = picker.value;
+            updatePreview();
+        }
+        function updatePicker(type) {
+            const picker = document.getElementById(type + 'Picker');
+            const hexInput = document.getElementById(type + 'Hex');
+            let value = hexInput.value.trim();
+            if (!value.startsWith('#')) {
+                value = '#' + value;
+            }
+            if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                picker.value = value;
+                updatePreview();
+            }
+        }
+        function updatePreview() {
+            const bgcolor = document.getElementById('bgcolorPicker').value;
+            const fgcolor = document.getElementById('fgcolorPicker').value;
+            const catcolor = document.getElementById('catcolorPicker').value;
+            const procolor = document.getElementById('procolorPicker').value;
+            const name = document.getElementById('storeName').value || 'نام فروشگاه';
+            const categories = document.querySelectorAll('.preview-category');
+            categories.forEach(cat => {
+                cat.style.backgroundColor = catcolor;
+                cat.style.color = '#fff';
+            });
+            const products = document.querySelectorAll('.preview-product');
+            products.forEach(pro => {
+                pro.style.backgroundColor = procolor;
+                pro.style.color = '#fff';
+            });
+        }
+        document.getElementById('storeName').addEventListener('input', function () {
+            const name = this.value || 'نام فروشگاه';
+        });
+        var token = getToken();
+        if (token) {
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/fa/settings/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    currentSettings = {
+                        name: data.name || '',
+                        unit: data.unit || '',
+                        bgcolor: data.bgcolor || '#ffffff',
+                        navcolor: data.navcolor || '#2196F3',
+                        fgcolor: data.fgcolor || '#333333',
+                        catcolor: data.catcolor || '#4CAF50',
+                        procolor: data.procolor || '#FF9800'
+                    };
+                    document.getElementById('storeName').value = currentSettings.name;
+                    document.getElementById('storeUnit').value = currentSettings.unit;
+                    if (data.bgcolor) {
+                        document.body.style.backgroundColor = data.bgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.settings-container').style.backgroundColor = newColor;
+                        document.querySelector('.color-picker-group').style.backgroundColor = newColor;
+                    }
+                    if (data.navcolor) {
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        let meta = document.createElement('meta');
+                        meta.name = "theme-color";
+                        meta.content = data.navcolor;
+                        document.head.appendChild(meta);
+                    }
+                    if (data.fgcolor) {
+                        document.body.style.color = data.fgcolor;
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelector('.settings-header p').style.color = data.fgcolor;
+                        document.querySelector('.color-picker-label').style.color = data.fgcolor;
+                        document.querySelectorAll('.form-group label').forEach(btn => btn.style.color = data.fgcolor);
+                    }
+                    if (data.catcolor) {
+                        document.querySelector('.header-title').style.color = data.catcolor;
+                    }
+                    document.getElementById('bgcolorPicker').value = currentSettings.bgcolor;
+                    document.getElementById('bgcolorHex').value = currentSettings.bgcolor;
+                    document.getElementById('navcolorPicker').value = currentSettings.navcolor;
+                    document.getElementById('navcolorHex').value = currentSettings.navcolor;
+                    document.getElementById('fgcolorPicker').value = currentSettings.fgcolor;
+                    document.getElementById('fgcolorHex').value = currentSettings.fgcolor;
+                    document.getElementById('catcolorPicker').value = currentSettings.catcolor;
+                    document.getElementById('catcolorHex').value = currentSettings.catcolor;
+                    document.getElementById('procolorPicker').value = currentSettings.procolor;
+                    document.getElementById('procolorHex').value = currentSettings.procolor;
+                    if (data.name) {
+                        document.title = data.name + " | تنظیمات ظاهری";
+                    }
+                    updatePreview();
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(error => {
+                    console.log('خطا در دریافت تنظیمات:', error);
+                    updatePreview();
+                });
+        }
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function saveSettings(event) {
+            event.preventDefault();
+            const name = document.getElementById('storeName').value.trim();
+            const unit = document.getElementById('storeUnit').value.trim();
+            const bgcolor = document.getElementById('bgcolorHex').value;
+            const navcolor = document.getElementById('navcolorHex').value;
+            const fgcolor = document.getElementById('fgcolorHex').value;
+            const catcolor = document.getElementById('catcolorHex').value;
+            const procolor = document.getElementById('procolorHex').value;
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'set');
+            formData.append('name', name);
+            formData.append('unit', unit);
+            formData.append('bgcolor', bgcolor);
+            formData.append('navcolor', navcolor);
+            formData.append('fgcolor', fgcolor);
+            formData.append('catcolor', catcolor);
+            formData.append('procolor', procolor);
+            fetch('/fa/settings/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "name") {
+                        alert("لطفا نام فروشگاه را وارد نمایید.");
+                    }
+                    else if (data.status == "unit") {
+                        alert("لطفا واحد پول را وارد نمایید.");
+                    }
+                    else if (data.status == "bgcolor") {
+                        alert("لطفا رنگ پس زمینه را وارد نمایید.");
+                    }
+                    else if (data.status == "navcolor") {
+                        alert("لطفا رنگ نوبار را وارد نمایید.");
+                    }
+                    else if (data.status == "fgcolor") {
+                        alert("لطفا رنگ نوشته ها را وارد نمایید.");
+                    }
+                    else if (data.status == "catcolor") {
+                        alert("لطفا رنگ دسته بندی ها را وارد نمایید.");
+                    }
+                    else if (data.status == "procolor") {
+                        alert("لطفا رنگ محصولات را وارد نمایید.");
+                    }
+                    else if (data.status == "ok") {
+                        alert("تنظیمات با موفقیت ذخیره شد.")
+                        document.body.style.backgroundColor = bgcolor;
+                        document.body.style.color = fgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.settings-container').style.backgroundColor = newColor;
+                        document.querySelectorAll('.color-picker-group').forEach(el => {
+                            el.style.backgroundColor = newColor;
+                        });
+                        document.querySelector('.save-btn').style.backgroundColor = navcolor;
+                        document.querySelector('.save-btn').style.color = fgcolor;
+                        document.querySelector('.cancel-btn').style.backgroundColor = navcolor;
+                        document.querySelector('.cancel-btn').style.color = fgcolor;
+                        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                        if (!metaThemeColor) {
+                            metaThemeColor = document.createElement('meta');
+                            metaThemeColor.name = "theme-color";
+                            document.head.appendChild(metaThemeColor);
+                        }
+                        metaThemeColor.content = navcolor;
+                    }
+                    else if (data.status == "error") {
+                        alert('خطا در ذخیره تنظیمات');
+                    }
+                })
+                .catch(error => {
+                    alert('خطا در ذخیره تنظیمات');
+                });
+        }
+    </script>
+</body>
+
+</html>

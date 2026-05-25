@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | خوش آمدید</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .language-container {
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .lang-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="language-container">
+        <h1 class="header" style="margin-bottom: 15px;">Welcome</h1>
+        <h1 class="header">خوش آمدید</h1>
+        <a href="/fa/" class="lang-btn">فارسی 🇮🇷</a>
+        <a href="/en/" class="lang-btn">English 🇬🇧</a>
+        <a href="/ar/" class="lang-btn">العربية 🇸🇦</a>
+    </div>
+    <script>
+        fetch('/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.bgcolor) {
+                    document.body.style.backgroundColor = data.bgcolor;
+                    let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                    let rgb = bodyColor.match(/\d+/g).map(Number);
+                    let darkerR = Math.max(0, rgb[0] + 30);
+                    let darkerG = Math.max(0, rgb[1] + 30);
+                    let darkerB = Math.max(0, rgb[2] + 30);
+                    let newColor = `rgb(${darkerR}, ${darkerG}, ${darkerB})`;
+                    let container = document.querySelector('.language-container');
+                    container.style.backgroundColor = newColor;
+                }
+                if (data.fgcolor) {
+                    document.body.style.color = data.fgcolor;
+                    document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.style.color = data.fgcolor;
+                    });
+                }
+                if (data.navcolor) {
+                    document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.style.backgroundColor = data.navcolor;
+                    });
+                    let meta = document.createElement('meta');
+                    meta.name = "theme-color";
+                    meta.content = data.navcolor;
+                    document.head.appendChild(meta);
+                }
+                if (data.catcolor) {
+                    document.querySelectorAll('.header').forEach(head => {
+                        head.style.color = data.catcolor;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('خطا در دریافت اطلاعات:', error);
+            });
+    </script>
+</body>
+
+</html>

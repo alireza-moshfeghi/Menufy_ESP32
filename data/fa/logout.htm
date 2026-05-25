@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logout-container {
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            transition: none !important;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .message {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .logout-container {
+                padding: 20px;
+                width: 95%;
+                max-width: 300px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+            }
+
+            .message {
+                font-size: 1em;
+            }
+
+            .confirm-btn {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logout-container">
+        <h1 class="header-title">خروج از سیستم</h1>
+        <p class="message">آیا برای خروج از سیستم مطمئن هستید؟</p>
+        <div class="btn-group">
+            <a href="/fa/logout/?accept=true" class="confirm-btn yes-btn">بله</a>
+            <a href="/fa/home/" class="confirm-btn no-btn">خیر</a>
+        </div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const accept = urlParams.get('accept');
+        if (accept === 'true') {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                token = token.split('=')[1];
+                var formData = new URLSearchParams();
+                formData.append('token', token);
+                fetch('/fa/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == "ok") {
+                            document.querySelector('.message').textContent = 'شما با موفقیت از سیستم خارج شدید';
+                            document.querySelector('.btn-group').style.display = 'none';
+                            setTimeout(() => {
+                                window.location.href = '/fa/login/';
+                            }, 2000);
+                        }
+                    });
+            }
+        }
+        fetch('/fa/logout/', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    document.title = data.name + " | خروج از سیستم";
+                }
+                if (data.bgcolor) {
+                    document.body.style.backgroundColor = data.bgcolor;
+                    let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                    let rgb = bodyColor.match(/\d+/g).map(Number);
+                    let lighterR = Math.min(255, rgb[0] + 30);
+                    let lighterG = Math.min(255, rgb[1] + 30);
+                    let lighterB = Math.min(255, rgb[2] + 30);
+                    let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                    let container = document.querySelector('.logout-container');
+                    container.style.backgroundColor = newColor;
+                }
+                if (data.fgcolor) {
+                    document.body.style.color = data.fgcolor;
+                    document.querySelectorAll('.confirm-btn').forEach(btn => {
+                        btn.style.color = '#fff';
+                    });
+                }
+                if (data.navcolor) {
+                    document.querySelectorAll('.confirm-btn').forEach(btn => {
+                        btn.style.backgroundColor = data.navcolor;
+                    });
+                    document.querySelector('.yes-btn').style.backgroundColor = data.navcolor;
+                    document.querySelector('.no-btn').style.backgroundColor = data.navcolor;
+                    let meta = document.createElement('meta');
+                    meta.name = "theme-color";
+                    meta.content = data.navcolor;
+                    document.head.appendChild(meta);
+                }
+                if (data.catcolor) {
+                    document.querySelector('.header-title').style.color = data.catcolor;
+                }
+            })
+            .catch(error => {
+                console.error('خطا در دریافت اطلاعات:', error);
+            });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .login-container {
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .header-title {
+            margin-bottom: 25px;
+            font-size: 1.5em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header-title {
+            margin-bottom: 30px;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>...جاري التحميل</span>
+        </div>
+    </div>
+    <div class="login-container">
+        <h2 class="header-title">تسجيل الدخول إلى لوحة الإدارة</h2>
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label for="username">:اسم المستخدم</label>
+                <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم الخاص بك" dir="rtl"
+                    required>
+            </div>
+            <div class="input-group">
+                <label for="password">:كلمة المرور</label>
+                <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور الخاصة بك" dir="rtl"
+                    required>
+            </div>
+            <button type="button" class="login-btn" onclick="login()">تسجيل الدخول</button>
+        </form>
+    </div>
+    <script>
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "admin" || data.status == "user") {
+                        window.location.href = '/ar/home/';
+                    }
+                });
+        }
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        document.getElementById('username').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        fetch('/ar/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    document.title = data.name + " | تسجيل الدخول";
+                }
+                if (data.bgcolor) {
+                    document.body.style.backgroundColor = data.bgcolor;
+                    let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                    let rgb = bodyColor.match(/\d+/g).map(Number);
+                    let lighterR = Math.min(255, rgb[0] + 30);
+                    let lighterG = Math.min(255, rgb[1] + 30);
+                    let lighterB = Math.min(255, rgb[2] + 30);
+                    let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                    let container = document.querySelector('.login-container');
+                    container.style.backgroundColor = newColor;
+                    lighterR = Math.min(255, rgb[0] + 60);
+                    lighterG = Math.min(255, rgb[1] + 60);
+                    lighterB = Math.min(255, rgb[2] + 60);
+                    newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                    document.querySelectorAll('input').forEach(input => {
+                        input.style.backgroundColor = newColor;
+                    });
+                }
+                if (data.fgcolor) {
+                    document.body.style.color = data.fgcolor;
+                    document.querySelector('.login-btn').style.color = data.fgcolor;
+                    document.querySelectorAll('input').forEach(input => {
+                        input.style.color = data.fgcolor;
+                    });
+                }
+                if (data.navcolor) {
+                    document.querySelector('.login-btn').style.backgroundColor = data.navcolor;
+                    let meta = document.createElement('meta');
+                    meta.name = "theme-color";
+                    meta.content = data.navcolor;
+                    document.head.appendChild(meta);
+                }
+                if (data.catcolor) {
+                    document.querySelector('.header-title').style.color = data.catcolor;
+                }
+                setTimeout(hideLoading, 500);
+            })
+            .catch(error => {
+                console.error('خطأ في استقبال البيانات:', error);
+            });
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function login() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            fetch('/ar/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.status === 'ok') {
+                        const expires = new Date();
+                        expires.setTime(expires.getTime() + (24 * 60 * 60 * 1000));
+                        document.cookie = `token=${data.token}; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
+                        window.location.href = '/ar/home/';
+                    }
+                    else if (data.status === 'error' && data.message === 'Invalid credentials') {
+                        alert('اسم المستخدم أو كلمة المرور غير صحيحة.');
+                        document.getElementById("username").value = '';
+                        document.getElementById("password").value = '';
+                    }
+                    else if (data.status === 'error' && data.message === 'Missing parameters') {
+                        alert('الرجاء إدخال اسم المستخدم وكلمة المرور.');
+                    }
+                    else {
+                        alert('حدث خطأ غير معروف.');
+                    }
+                })
+                .catch(function (error) {
+                    alert('خطأ في الاتصال بالخادم');
+                });
+        }
+    </script>
+</body>
+
+</html>

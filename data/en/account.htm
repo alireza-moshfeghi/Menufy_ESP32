@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1em;
+            min-width: 100px;
+        }
+
+        .settings-container {
+            width: 95%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            transition: none !important;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .settings-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .settings-header p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: left;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            direction: ltr;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #888;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .form-section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .save-btn,
+        .cancel-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .settings-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </div>
+    <div class="settings-container" id="settingsContainer">
+        <div class="settings-header">
+            <h1 class="header-title">Account Settings</h1>
+            <p>Change your account details</p>
+        </div>
+        <form onsubmit="saveSettings(event)" id="settingsForm">
+            <div class="form-section">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" id="username" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <label>Current Password:</label>
+                    <input type="password" id="currentPassword" placeholder="Current Password">
+                </div>
+                <div class="form-group">
+                    <label>New Password:</label>
+                    <input type="password" id="newPassword" placeholder="New Password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password:</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm New Password">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn"
+                    onclick="window.location.href='/en/home/'">Back</button>
+                <button type="submit" class="modal-btn save-btn">Save</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/en/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "invalid" || data.status == "user") {
+                        window.location.href = '/en/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/en/login/';
+        }
+        let currentSettings = {
+            username: ''
+        };
+        function getToken() {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                return token.split('=')[1];
+            }
+            return null;
+        }
+        var token = getToken();
+        if (token) {
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/en/account/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    currentSettings = {
+                        username: data.username || ''
+                    };
+                    if (data.navcolor) {
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        let meta = document.createElement('meta');
+                        meta.name = "theme-color";
+                        meta.content = data.navcolor;
+                        document.head.appendChild(meta);
+                    }
+                    if (data.fgcolor) {
+                        document.body.style.color = data.fgcolor;
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelector('.settings-header p').style.color = data.fgcolor;
+                        document.querySelectorAll('.form-group label').forEach(label => label.style.color = data.fgcolor);
+                    }
+                    if (data.bgcolor) {
+                        document.body.style.backgroundColor = data.bgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.settings-container').style.backgroundColor = newColor;
+                    }
+                    if (data.catcolor) {
+                        document.querySelector('.header-title').style.color = data.catcolor;
+                    }
+                    if (data.name) {
+                        document.title = data.name + " | Account Settings";
+                    }
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(error => {
+                    console.log('Error fetching data:', error);
+                });
+        }
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function saveSettings(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'set');
+            formData.append('username', username);
+            formData.append('currentPassword', currentPassword);
+            formData.append('newPassword', newPassword);
+            formData.append('confirmPassword', confirmPassword);
+            fetch('/en/account/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "username") {
+                        alert("Please enter a username.");
+                    }
+                    else if (data.status == "wrongUsername") {
+                        alert("The username you entered is incorrect.");
+                    }
+                    else if (data.status == "currentPassword") {
+                        alert("Please enter your current password.");
+                    }
+                    else if (data.status == "newPassword") {
+                        alert("Please enter a new password.");
+                    }
+                    else if (data.status == "confirmPassword") {
+                        alert("Please confirm your new password.");
+                    }
+                    else if (data.status == "wrongPassword") {
+                        alert("The password you entered is incorrect.");
+                    }
+                    else if (data.status == "noMatch") {
+                        alert("The new password and confirmation do not match.");
+                    }
+                    else if (data.status == "shortPassword") {
+                        alert("Password must be more than eight characters long.");
+                    }
+                    else if (data.status == "ok") {
+                        alert("Password successfully changed.");
+                        document.getElementById('currentPassword').value = '';
+                        document.getElementById('newPassword').value = '';
+                        document.getElementById('username').value = '';
+                        document.getElementById('confirmPassword').value = '';
+                        if (data.navcolor) {
+                            document.querySelector('.save-btn').style.backgroundColor = data.navcolor;
+                            document.querySelector('.save-btn').style.color = data.fgcolor;
+                            document.querySelector('.cancel-btn').style.backgroundColor = data.navcolor;
+                            document.querySelector('.cancel-btn').style.color = data.fgcolor;
+                            let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                            if (!metaThemeColor) {
+                                metaThemeColor = document.createElement('meta');
+                                metaThemeColor.name = "theme-color";
+                                document.head.appendChild(metaThemeColor);
+                            }
+                            metaThemeColor.content = data.navcolor;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Error saving settings:', error);
+                    alert('Error saving settings');
+                });
+        }
+    </script>
+</body>
+
+</html>

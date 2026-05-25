@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1em;
+            min-width: 100px;
+        }
+
+        .settings-container {
+            width: 95%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            transition: none !important;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .settings-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .settings-header p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: left;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            direction: ltr;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #888;
+        }
+
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background-color: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option span {
+            font-size: 1em;
+        }
+
+        .manual-settings {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .manual-settings.show {
+            display: block;
+        }
+
+        .manual-settings .form-group {
+            margin-bottom: 15px;
+        }
+
+        .manual-settings .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .save-btn,
+        .cancel-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .settings-container {
+                padding: 20px;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </div>
+    <div class="settings-container" id="settingsContainer">
+        <div class="settings-header">
+            <h1 class="header-title">Network Settings</h1>
+            <p>Network configuration and device connection</p>
+        </div>
+        <form onsubmit="saveSettings(event)" id="settingsForm">
+            <div class="form-group">
+                <label>Access Point:</label>
+                <input type="text" id="ap" placeholder="Enter access point name">
+            </div>
+            <div class="form-group">
+                <label>Max Users:</label>
+                <select id="maxcon">
+                    <option value="1">1 person</option>
+                    <option value="2">2 people</option>
+                    <option value="3">3 people</option>
+                    <option value="4">4 people</option>
+                    <option value="5">5 people</option>
+                    <option value="6">6 people</option>
+                    <option value="7">7 people</option>
+                    <option value="8">8 people</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Network Name (SSID):</label>
+                <input type="text" id="ssid" placeholder="Enter network name">
+            </div>
+            <div class="form-group">
+                <label>Network Password:</label>
+                <input type="text" id="key" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label>Network Settings Type:</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="networkType" value="dhcp" checked onchange="toggleNetworkType()">
+                        <span>Automatic (DHCP)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="networkType" value="manual" onchange="toggleNetworkType()">
+                        <span>Manual</span>
+                    </label>
+                </div>
+            </div>
+            <div class="manual-settings" id="manualSettings">
+                <div class="form-group">
+                    <label>IP Address:</label>
+                    <input type="text" id="ip" placeholder="192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label>Subnet Mask:</label>
+                    <input type="text" id="subnet" placeholder="255.255.255.0">
+                </div>
+                <div class="form-group">
+                    <label>Gateway:</label>
+                    <input type="text" id="gateway" placeholder="192.168.1.1">
+                </div>
+                <div class="form-group">
+                    <label>DNS:</label>
+                    <input type="text" id="dns" placeholder="8.8.8.8">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn"
+                    onclick="window.location.href='/en/home/'">Back</button>
+                <button type="submit" class="modal-btn save-btn">Save</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/en/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "invalid" || data.status == "user") {
+                        window.location.href = '/en/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/en/login/';
+        }
+        let currentSettings = {
+            ap: '',
+            maxcon: 1,
+            ssid: '',
+            key: '',
+            networkType: 'dhcp',
+            ip: '',
+            subnet: '',
+            gateway: '',
+            dns: ''
+        };
+        function getToken() {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                return token.split('=')[1];
+            }
+            return null;
+        }
+        function toggleNetworkType() {
+            const networkType = document.querySelector('input[name="networkType"]:checked').value;
+            const manualSettings = document.getElementById('manualSettings');
+            const ipInput = document.getElementById('ip');
+            const subnetInput = document.getElementById('subnet');
+            const gatewayInput = document.getElementById('gateway');
+            const dnsInput = document.getElementById('dns');
+            if (networkType === 'manual') {
+                manualSettings.classList.add('show');
+                ipInput.disabled = false;
+                subnetInput.disabled = false;
+                gatewayInput.disabled = false;
+                dnsInput.disabled = false;
+            } else {
+                manualSettings.classList.remove('show');
+                ipInput.disabled = true;
+                subnetInput.disabled = true;
+                gatewayInput.disabled = true;
+                dnsInput.disabled = true;
+            }
+        }
+        var token = getToken();
+        if (token) {
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/en/modules/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    currentSettings = {
+                        ap: data.ap || '',
+                        maxcon: data.maxcon || 1,
+                        ssid: data.ssid || '',
+                        key: data.key || '',
+                        networkType: data.networkType || 'dhcp',
+                        ip: data.ip || '',
+                        subnet: data.subnet || '',
+                        gateway: data.gateway || '',
+                        dns: data.dns || ''
+                    };
+                    document.getElementById('ap').value = currentSettings.ap;
+                    document.getElementById('maxcon').value = currentSettings.maxcon;
+                    document.getElementById('ssid').value = currentSettings.ssid;
+                    document.getElementById('key').value = currentSettings.key;
+                    document.getElementById('ip').value = currentSettings.ip;
+                    document.getElementById('subnet').value = currentSettings.subnet;
+                    document.getElementById('gateway').value = currentSettings.gateway;
+                    document.getElementById('dns').value = currentSettings.dns;
+                    const networkTypeRadios = document.querySelectorAll('input[name="networkType"]');
+                    networkTypeRadios.forEach(radio => {
+                        if (radio.value === currentSettings.networkType) {
+                            radio.checked = true;
+                        }
+                    });
+                    toggleNetworkType();
+                    if (data.navcolor) {
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        let meta = document.createElement('meta');
+                        meta.name = "theme-color";
+                        meta.content = data.navcolor;
+                        document.head.appendChild(meta);
+                    }
+                    if (data.fgcolor) {
+                        document.body.style.color = data.fgcolor;
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelector('.settings-header p').style.color = data.fgcolor;
+                        document.querySelectorAll('.form-group label').forEach(label => label.style.color = data.fgcolor);
+                    }
+                    if (data.bgcolor) {
+                        document.body.style.backgroundColor = data.bgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.settings-container').style.backgroundColor = newColor;
+                        document.querySelector('.manual-settings').style.backgroundColor = newColor;
+                    }
+                    if (data.catcolor) {
+                        document.querySelector('.header-title').style.color = data.catcolor;
+                    }
+                    if (data.name) {
+                        document.title = data.name + " | Module Settings";
+                    }
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(error => {
+                    console.log('Error loading settings:', error);
+                });
+        }
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function saveSettings(event) {
+            event.preventDefault();
+            const ap = document.getElementById('ap').value.trim();
+            const maxcon = document.getElementById('maxcon').value;
+            const ssid = document.getElementById('ssid').value.trim();
+            const key = document.getElementById('key').value;
+            const networkType = document.querySelector('input[name="networkType"]:checked').value;
+            const ip = document.getElementById('ip').value.trim();
+            const subnet = document.getElementById('subnet').value.trim();
+            const gateway = document.getElementById('gateway').value.trim();
+            const dns = document.getElementById('dns').value.trim();
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'set');
+            formData.append('ap', ap);
+            formData.append('maxcon', maxcon);
+            formData.append('ssid', ssid);
+            formData.append('key', key);
+            formData.append('networkType', networkType);
+            formData.append('ip', ip);
+            formData.append('subnet', subnet);
+            formData.append('gateway', gateway);
+            formData.append('dns', dns);
+            fetch('/en/modules/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "ap") {
+                        alert("Please enter the access point name.");
+                    }
+                    else if (data.status == "maxcon") {
+                        alert("Please enter the maximum number of users.");
+                    }
+                    else if (data.status == "networkType") {
+                        alert("Please select the network settings type.");
+                    }
+                    else if (data.status == "ip") {
+                        alert("Please enter the IP address.");
+                    }
+                    else if (data.status == "gateway") {
+                        alert("Please enter the Gateway.");
+                    }
+                    else if (data.status == "subnet") {
+                        alert("Please enter the Subnet mask.");
+                    }
+                    else if (data.status == "dns") {
+                        alert("Please enter the DNS.");
+                    }
+                    else if (data.status == "ok") {
+                        alert("Settings saved successfully.");
+                        if (data.navcolor) {
+                            document.querySelector('.save-btn').style.backgroundColor = data.navcolor;
+                            document.querySelector('.save-btn').style.color = data.fgcolor;
+                            document.querySelector('.cancel-btn').style.backgroundColor = data.navcolor;
+                            document.querySelector('.cancel-btn').style.color = data.fgcolor;
+                            let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                            if (!metaThemeColor) {
+                                metaThemeColor = document.createElement('meta');
+                                metaThemeColor.name = "theme-color";
+                                document.head.appendChild(metaThemeColor);
+                            }
+                            metaThemeColor.content = data.navcolor;
+                        }
+                    }
+                    else if (data.status == "error") {
+                        alert('Error saving settings: ' + (data.message || ''));
+                    }
+                })
+                .catch(error => {
+                    console.log('Error saving settings:', error);
+                    alert('Error saving settings');
+                });
+        }
+    </script>
+</body>
+
+</html>

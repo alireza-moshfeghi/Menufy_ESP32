@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .page-header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 0 auto 15px auto;
+        }
+
+        h1 {
+            font-size: 1.5em;
+        }
+
+        .add-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 15px;
+            margin: 0 auto 15px auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            direction: rtl;
+        }
+
+        .customers-container {
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            transition: none !important;
+            margin: 0 auto;
+        }
+
+        .customer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid;
+            direction: rtl;
+        }
+
+        .customer-item:last-child {
+            border-bottom: none;
+        }
+
+        .customer-info {
+            flex: 1;
+        }
+
+        .customer-name {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .customer-detail {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 10px;
+            margin-right: 15px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            line-height: 1;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .modal-message {
+            margin-bottom: 25px;
+            font-size: 1em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: right;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            direction: rtl;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #888;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+                align-items: center;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .customers-container {
+                padding: 15px;
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            .customer-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .customer-actions {
+                margin-right: 0;
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .modal-content {
+                padding: 20px 15px;
+            }
+
+            .search-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>...جاري التحميل</span>
+        </div>
+    </div>
+    <div class="page-header">
+        <h1 class="header-title">إدارة العملاء</h1>
+        <button class="add-btn action-btn" onclick="openAddModal()">➕ إضافة عميل</button>
+    </div>
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 بحث عن عميل..."
+            oninput="searchCustomers()">
+    </div>
+    <div class="customers-container" id="customersList">
+    </div>
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDeleteModal()">&times;</span>
+            <h2 class="modal-title">حذف العميل</h2>
+            <p class="modal-message">هل أنت متأكد من حذف هذا العميل؟</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-delete-btn" onclick="confirmDelete()">نعم</button>
+                <button class="modal-btn cancel-btn" onclick="closeDeleteModal()">لا</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            <h2 class="modal-title">تعديل العميل</h2>
+            <form onsubmit="saveEdit(event)">
+                <input type="hidden" id="editId">
+                <input type="hidden" id="editPhoneHidden">
+                <div class="form-group">
+                    <label>:الاسم الكامل</label>
+                    <input type="text" id="editFullname">
+                </div>
+                <div class="form-group">
+                    <label>:رقم الهاتف</label>
+                    <input type="tel" id="editPhone">
+                </div>
+                <div class="form-group">
+                    <label>:العنوان</label>
+                    <input type="text" id="editAddress">
+                </div>
+                <button type="submit" class="modal-btn save-btn">💾 حفظ</button>
+                <button type="button" class="modal-btn cancel-btn" onclick="closeEditModal()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAddModal()">&times;</span>
+            <h2 class="modal-title">إضافة عميل جديد</h2>
+            <form onsubmit="saveNewCustomer(event)">
+                <div class="form-group">
+                    <label>:الاسم الكامل</label>
+                    <input type="text" id="newFullname">
+                </div>
+                <div class="form-group">
+                    <label>:رقم الهاتف</label>
+                    <input type="tel" id="newPhone">
+                </div>
+                <div class="form-group">
+                    <label>:العنوان</label>
+                    <input type="text" id="newAddress">
+                </div>
+                <button type="submit" class="modal-btn save-btn">➕ إضافة</button>
+                <button type="button" class="modal-btn cancel-btn" onclick="closeAddModal()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        var account = "";
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "admin") {
+                        account = "admin";
+                    }
+                    else if (data.status == "user") {
+                        account = "user";
+                    }
+                    else if (data.status == "invalid") {
+                        window.location.href = '/ar/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/ar/login/';
+        }
+        document.getElementById('newFullname').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveNewCustomer(event);
+            }
+        });
+        document.getElementById('newPhone').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveNewCustomer(event);
+            }
+        });
+        document.getElementById('newAddress').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveNewCustomer(event);
+            }
+        });
+        document.getElementById('editFullname').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit(event);
+            }
+        });
+        document.getElementById('editPhone').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit(event);
+            }
+        });
+        document.getElementById('editAddress').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit(event);
+            }
+        });
+        let deleteCustomerId = null;
+        let deleteCustomerPhone = null;
+        let allCustomers = [];
+        function getToken() {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                return token.split('=')[1];
+            }
+            return null;
+        }
+        var token = getToken();
+        if (token) {
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    window.buttonColors = data;
+                    if (data.name) {
+                        document.title = data.name + " | العملاء";
+                    }
+                    if (data.bgcolor) {
+                        document.body.style.backgroundColor = data.bgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.customers-container').style.backgroundColor = newColor;
+                        document.querySelector('.search-input').style.backgroundColor = newColor;
+                        let borderR = Math.min(255, rgb[0] + 50);
+                        let borderG = Math.min(255, rgb[1] + 50);
+                        let borderB = Math.min(255, rgb[2] + 50);
+                        let borderColor = `rgb(${borderR}, ${borderG}, ${borderB})`;
+                        document.querySelectorAll('.customer-item').forEach(item => {
+                            item.style.borderBottomColor = borderColor;
+                        });
+                    }
+                    if (data.fgcolor) {
+                        document.body.style.color = data.fgcolor;
+                        document.querySelector('.search-input').style.color = data.fgcolor;
+                        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.delete-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.confirm-delete-btn').forEach(btn => btn.style.color = data.fgcolor);
+                    }
+                    if (data.navcolor) {
+                        document.querySelector('.add-btn').style.backgroundColor = data.navcolor;
+                        document.querySelector('.add-btn').style.color = '#fff';
+                        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.delete-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.confirm-delete-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        let meta = document.createElement('meta');
+                        meta.name = "theme-color";
+                        meta.content = data.navcolor;
+                        document.head.appendChild(meta);
+                    }
+                    if (data.catcolor) {
+                        document.querySelector('.header-title').style.color = data.catcolor;
+                    }
+                    if (data.users && Array.isArray(data.users)) {
+                        allCustomers = data.users.map((user, index) => ({
+                            id: user.id || String(index + 1),
+                            name: user.name || '',
+                            phone: user.phone || '',
+                            address: user.address || ''
+                        }));
+                        renderCustomers(allCustomers);
+                    }
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(error => {
+                    document.getElementById('customersList').innerHTML =
+                        '<p style="text-align: center; padding: 20px;">خطأ في استقبال البيانات</p>';
+                });
+        }
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function renderCustomers(customers) {
+            const container = document.getElementById('customersList');
+            container.innerHTML = '';
+            if (customers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">لم يتم العثور على عملاء</p>';
+                return;
+            }
+            customers.forEach(customer => {
+                const div = document.createElement('div');
+                div.className = 'customer-item';
+                if (account == "admin") {
+                    div.innerHTML = `
+                    <div class="customer-info">
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-detail">📞 ${customer.phone}</div>
+                        <div class="customer-detail">📍 ${customer.address || '-'}</div>
+                    </div>
+                    <div class="customer-actions">
+                        <button class="action-btn edit-btn" onclick="openEditModal('${customer.id}', '${escapeHtml(customer.name)}', '${customer.phone}', '${escapeHtml(customer.address || '')}')">✏️ تعديل</button>
+                        <button class="action-btn delete-btn" onclick="openDeleteModal('${customer.id}', '${customer.phone}')">🗑️ حذف</button>
+                    </div>
+                    `;
+                }
+                else if (account == "user") {
+                    div.innerHTML = `
+                    <div class="customer-info">
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-detail">📞 ${customer.phone}</div>
+                        <div class="customer-detail">📍 ${customer.address || '-'}</div>
+                    </div>
+                    <div class="customer-actions">
+                        
+                    </div>
+                    `;
+                }
+                container.appendChild(div);
+            });
+            applyButtonColors();
+        }
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        function applyButtonColors() {
+            if (window.buttonColors) {
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.style.backgroundColor = window.buttonColors.navcolor;
+                    btn.style.color = '#fff';
+                });
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.backgroundColor = window.buttonColors.navcolor;
+                    btn.style.color = '#fff';
+                });
+            }
+        }
+        function searchCustomers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (searchTerm === '') {
+                renderCustomers(allCustomers);
+                return;
+            }
+            const filtered = allCustomers.filter(customer => {
+                const name = customer.name.toLowerCase();
+                const phone = customer.phone.toLowerCase();
+                return name.includes(searchTerm) || phone.includes(searchTerm);
+            });
+            renderCustomers(filtered);
+        }
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+        function openDeleteModal(id, phone) {
+            deleteCustomerId = id;
+            deleteCustomerPhone = phone;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function closeDeleteModal() {
+            deleteCustomerId = null;
+            deleteCustomerPhone = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+        function confirmDelete() {
+            if (deleteCustomerId && deleteCustomerPhone) {
+                var token = getToken();
+                var formData = new URLSearchParams();
+                formData.append('token', token);
+                formData.append('action', 'delete');
+                formData.append('phone', deleteCustomerPhone);
+                fetch('/ar/users/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData.toString()
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == "ok") {
+                            allCustomers = allCustomers.filter(c => c.id != deleteCustomerId);
+                            searchCustomers();
+                            closeDeleteModal();
+                        }
+                    })
+                    .catch(error => {
+                        alert('خطأ في حذف العميل');
+                    });
+            }
+        }
+        function openEditModal(id, name, phone, address) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editPhoneHidden').value = phone;
+            document.getElementById('editFullname').value = name;
+            document.getElementById('editPhone').value = phone;
+            document.getElementById('editAddress').value = address || '';
+            document.getElementById('editModal').classList.add('active');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+        function saveEdit(event) {
+            event.preventDefault();
+            const id = document.getElementById('editId').value;
+            const oldPhone = document.getElementById('editPhoneHidden').value;
+            const fullname = document.getElementById('editFullname').value.trim();
+            const phone = document.getElementById('editPhone').value;
+            const address = document.getElementById('editAddress').value;
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'edit');
+            formData.append('oldPhone', oldPhone);
+            formData.append('name', fullname);
+            formData.append('phone', phone);
+            formData.append('address', address);
+            fetch('/ar/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "exists") {
+                        alert("رقم الهاتف الذي أدخلته مسجل مسبقاً.")
+                    }
+                    else if (data.status == "name") {
+                        alert("الرجاء إدخال الاسم الكامل.")
+                    }
+                    else if (data.status == "phone") {
+                        alert("الرجاء إدخال رقم الهاتف.")
+                    }
+                    else if (data.status == "ok") {
+                        const index = allCustomers.findIndex(c => c.id == id);
+                        if (index !== -1) {
+                            allCustomers[index] = {
+                                ...allCustomers[index],
+                                name: fullname,
+                                phone: phone,
+                                address: address
+                            };
+                        }
+                        searchCustomers();
+                        closeEditModal();
+                    }
+                })
+                .catch(error => {
+                    alert('خطأ في تعديل العميل');
+                });
+        }
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+        function saveNewCustomer(event) {
+            event.preventDefault();
+            const newCustomer = {
+                id: Date.now().toString(),
+                name: document.getElementById('newFullname').value.trim(),
+                phone: document.getElementById('newPhone').value,
+                address: document.getElementById('newAddress').value
+            };
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'add');
+            formData.append('name', newCustomer.name);
+            formData.append('phone', newCustomer.phone);
+            formData.append('address', newCustomer.address);
+            fetch('/ar/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "exists") {
+                        alert("رقم الهاتف الذي أدخلته مسجل مسبقاً.")
+                    }
+                    else if (data.status == "name") {
+                        alert("الرجاء إدخال الاسم الكامل.")
+                    }
+                    else if (data.status == "phone") {
+                        alert("الرجاء إدخال رقم الهاتف.")
+                    }
+                    else if (data.status == "ok") {
+                        allCustomers.push(newCustomer);
+                        document.getElementById('newFullname').value = '';
+                        document.getElementById('newPhone').value = '';
+                        document.getElementById('newAddress').value = '';
+                        searchCustomers();
+                        closeAddModal();
+                    }
+                })
+                .catch(error => {
+                    alert('خطأ في إضافة العميل');
+                });
+        }
+    </script>
+</body>
+
+</html>

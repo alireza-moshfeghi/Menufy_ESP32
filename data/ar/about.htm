@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar">
+  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .about-container {
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            transition: none !important;
+        }
+        h1 {
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        p {
+            font-size: 1em;
+            line-height: 1.8;
+            text-align: justify;
+            text-align-last: center;
+            letter-spacing: 0.5px;
+            margin-bottom: 25px;
+            direction: rtl;
+            color: #ddd;
+            word-wrap: break-word;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            border: none;
+            cursor: pointer;
+        }
+  
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+  
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+  
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+  
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+  
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+  
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+  
+            .about-container {
+                padding: 20px;
+                width: 95%;
+            }
+  
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 16px;
+            }
+  
+            p {
+                font-size: 0.9em;
+                line-height: 1.6;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+  
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>...جاري التحميل</span>
+        </div>
+    </div>
+    <div class="about-container">
+        <h1 class="header-title">معلومات عنا</h1>
+        <p class="content-text">
+        </p>
+        <a href="/ar/" class="back-btn action-btn">العودة إلى القائمة</a>
+    </div>
+    <script>
+        fetch('/ar/about/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    document.title = data.name + " | معلومات عنا";
+                }
+                if (data.bgcolor) {
+                    document.body.style.backgroundColor = data.bgcolor;
+                    let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                    let rgb = bodyColor.match(/\d+/g).map(Number);
+                    let lighterR = Math.min(255, rgb[0] + 30);
+                    let lighterG = Math.min(255, rgb[1] + 30);
+                    let lighterB = Math.min(255, rgb[2] + 30);
+                    let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                    let container = document.querySelector('.about-container');
+                    container.style.backgroundColor = newColor;
+                }
+                if (data.fgcolor) {
+                    document.body.style.color = data.fgcolor;
+                    document.querySelector('.back-btn').style.color = data.fgcolor;
+                    document.querySelector('.content-text').style.color = data.fgcolor;
+                }
+                if (data.navcolor) {
+                    document.querySelector('.back-btn').style.backgroundColor = data.navcolor;
+                    let meta = document.createElement('meta');
+                    meta.name = "theme-color";
+                    meta.content = data.navcolor;
+                    document.head.appendChild(meta);
+                }
+                if (data.catcolor) {
+                    document.querySelector('.header-title').style.color = data.catcolor;
+                }
+                if (data.info) {
+                    document.querySelector('.content-text').textContent = data.info;
+                }
+                setTimeout(hideLoading, 500);
+            })
+            .catch(error => {
+                console.error('خطأ في استقبال البيانات:', error);
+            });
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+    </script>
+</body>
+</html>

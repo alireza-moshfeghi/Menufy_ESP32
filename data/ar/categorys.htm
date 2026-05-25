@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .page-header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 0 auto 15px auto;
+        }
+
+        h1 {
+            font-size: 1.5em;
+        }
+
+        .add-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 15px;
+            margin: 0 auto 15px auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            direction: rtl;
+        }
+
+        .customers-container {
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            transition: none !important;
+            margin: 0 auto;
+        }
+
+        .customer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid;
+            direction: rtl;
+        }
+
+        .customer-item:last-child {
+            border-bottom: none;
+        }
+
+        .customer-info {
+            flex: 1;
+        }
+
+        .customer-name {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .customer-detail {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 10px;
+            margin-right: 15px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .status-active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-inactive {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            line-height: 1;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .modal-message {
+            margin-bottom: 25px;
+            font-size: 1em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: right;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            direction: rtl;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #888;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            padding: 20px 32px;
+            border-radius: 12px;
+            font-family: Tahoma, sans-serif;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #666666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+                align-items: center;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .customers-container {
+                padding: 15px;
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            .customer-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .customer-actions {
+                margin-right: 0;
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .modal-content {
+                padding: 20px 15px;
+            }
+
+            .search-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <span>...جاري التحميل</span>
+        </div>
+    </div>
+    <div class="page-header">
+        <h1 class="header-title">إدارة التصنيفات</h1>
+        <button id="addBtn" class="add-btn action-btn" onclick="openAddModal()">➕ إضافة تصنيف</button>
+    </div>
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 بحث عن تصنيف..."
+            oninput="searchCategories()">
+    </div>
+    <div class="customers-container" id="categoriesList">
+    </div>
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDeleteModal()">&times;</span>
+            <h2 class="modal-title">حذف التصنيف</h2>
+            <p class="modal-message">هل أنت متأكد من حذف هذا التصنيف؟</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-delete-btn" onclick="confirmDelete()">نعم</button>
+                <button class="modal-btn cancel-btn" onclick="closeDeleteModal()">لا</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            <h2 class="modal-title">تعديل التصنيف</h2>
+            <form onsubmit="saveEdit(event)">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>:اسم التصنيف</label>
+                    <input type="text" id="editName">
+                </div>
+                <div class="form-group">
+                    <label>:الموقع</label>
+                    <select id="editPosition">
+                        <option value="right">يمين</option>
+                        <option value="left">يسار</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>:الحالة</label>
+                    <select id="editStatus">
+                        <option value="true">نشط</option>
+                        <option value="false">غير نشط</option>
+                    </select>
+                </div>
+                <button type="submit" class="modal-btn save-btn">💾 حفظ</button>
+                <button type="button" class="modal-btn cancel-btn" onclick="closeEditModal()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAddModal()">&times;</span>
+            <h2 class="modal-title">إضافة تصنيف جديد</h2>
+            <form onsubmit="saveNewCategory(event)">
+                <div class="form-group">
+                    <label>:اسم التصنيف</label>
+                    <input type="text" id="newName">
+                </div>
+                <div class="form-group">
+                    <label>:الموقع</label>
+                    <select id="newPosition">
+                        <option value="right">يمين</option>
+                        <option value="left">يسار</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>:الحالة</label>
+                    <select id="newStatus">
+                        <option value="true">نشط</option>
+                        <option value="false">غير نشط</option>
+                    </select>
+                </div>
+                <button type="submit" class="modal-btn save-btn">➕ إضافة</button>
+                <button type="button" class="modal-btn cancel-btn" onclick="closeAddModal()">إلغاء</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        var account = "";
+        var cookie = document.cookie;
+        var token = cookie.split('; ').find(row => row.startsWith('token='));
+        if (token) {
+            token = token.split('=')[1];
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "admin") {
+                        account = "admin";
+                    }
+                    else if (data.status == "user") {
+                        account = "user";
+                    }
+                    else if (data.status == "invalid") {
+                        window.location.href = '/ar/login/';
+                    }
+                });
+        }
+        else {
+            window.location.href = '/ar/login/';
+        }
+        document.getElementById('newName').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveNewCategory(event);
+            }
+        });
+        document.getElementById('editName').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit(event);
+            }
+        });
+        let deleteCategoryId = null;
+        let allCategories = [];
+        function getToken() {
+            var cookie = document.cookie;
+            var token = cookie.split('; ').find(row => row.startsWith('token='));
+            if (token) {
+                return token.split('=')[1];
+            }
+            return null;
+        }
+        var token = getToken();
+        if (token) {
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            fetch('/ar/categorys/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    window.buttonColors = data;
+                    if (data.name) {
+                        document.title = data.name + " | التصنيفات";
+                    }
+                    if (data.bgcolor) {
+                        document.body.style.backgroundColor = data.bgcolor;
+                        let bodyColor = window.getComputedStyle(document.body).backgroundColor;
+                        let rgb = bodyColor.match(/\d+/g).map(Number);
+                        let lighterR = Math.min(255, rgb[0] + 30);
+                        let lighterG = Math.min(255, rgb[1] + 30);
+                        let lighterB = Math.min(255, rgb[2] + 30);
+                        let newColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+                        document.querySelector('.customers-container').style.backgroundColor = newColor;
+                        document.querySelector('.search-input').style.backgroundColor = newColor;
+                        let borderR = Math.min(255, rgb[0] + 50);
+                        let borderG = Math.min(255, rgb[1] + 50);
+                        let borderB = Math.min(255, rgb[2] + 50);
+                        let borderColor = `rgb(${borderR}, ${borderG}, ${borderB})`;
+                        document.querySelectorAll('.customer-item').forEach(item => {
+                            item.style.borderBottomColor = borderColor;
+                        });
+                    }
+                    if (data.fgcolor) {
+                        document.body.style.color = data.fgcolor;
+                        document.querySelector('.add-btn').style.color = data.fgcolor;
+                        document.querySelector('.search-input').style.color = data.fgcolor;
+                        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.delete-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.color = data.fgcolor);
+                        document.querySelectorAll('.confirm-delete-btn').forEach(btn => btn.style.color = data.fgcolor);
+                    }
+                    if (data.navcolor) {
+                        document.querySelector('.add-btn').style.backgroundColor = data.navcolor;
+                        document.querySelectorAll('.edit-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.delete-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.save-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.cancel-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        document.querySelectorAll('.confirm-delete-btn').forEach(btn => btn.style.backgroundColor = data.navcolor);
+                        let meta = document.createElement('meta');
+                        meta.name = "theme-color";
+                        meta.content = data.navcolor;
+                        document.head.appendChild(meta);
+                    }
+                    if (data.catcolor) {
+                        document.querySelector('.header-title').style.color = data.catcolor;
+                    }
+                    if (data.categorys && Array.isArray(data.categorys)) {
+                        allCategories = data.categorys.map((category, index) => ({
+                            id: category.id || String(index + 1),
+                            name: category.name || '',
+                            position: category.position || 'left',
+                            status: category.status || 'true'
+                        }));
+                        renderCategories(allCategories);
+                    }
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(error => {
+                    document.getElementById('categoriesList').innerHTML =
+                        '<p style="text-align: center; padding: 20px;">خطأ في استقبال البيانات</p>';
+                });
+        }
+        function hideLoading() {
+            document.getElementById('loading').classList.add('fade-out');
+        }
+        function renderCategories(categories) {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = '';
+            if (categories.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">لم يتم العثور على تصنيفات</p>';
+                return;
+            }
+            categories.forEach(category => {
+                const positionText = category.position === 'left' ? 'يسار' : 'يمين';
+                const statusClass = category.status === 'true' ? 'status-active' : 'status-inactive';
+                const statusText = category.status === 'true' ? 'نشط' : 'غير نشط';
+                const div = document.createElement('div');
+                div.className = 'customer-item';
+                if (account == "admin") {
+                    div.innerHTML = `
+                    <div class="customer-info">
+                        <div class="customer-name">${category.name}</div>
+                        <div class="customer-detail">📍 الموقع: ${positionText}</div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="customer-actions">
+                        <button class="action-btn edit-btn" onclick="openEditModal('${category.id}', '${escapeHtml(category.name)}', '${category.position}', '${category.status}')">✏️ تعديل</button>
+                        <button class="action-btn delete-btn" onclick="openDeleteModal('${category.id}')">🗑️ حذف</button>
+                    </div>
+                    `;
+                }
+                else if (account == "user") {
+                    document.getElementById("addBtn").setAttribute("style", "display: none;");
+                    div.innerHTML = `
+                    <div class="customer-info">
+                        <div class="customer-name">${category.name}</div>
+                        <div class="customer-detail">📍 الموقع: ${positionText}</div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="customer-actions">
+                    </div>
+                    `;
+                }
+                container.appendChild(div);
+            });
+            applyButtonColors();
+        }
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        function applyButtonColors() {
+            if (window.buttonColors) {
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.style.backgroundColor = window.buttonColors.navcolor;
+                    btn.style.color = '#fff';
+                });
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.backgroundColor = window.buttonColors.navcolor;
+                    btn.style.color = '#fff';
+                });
+            }
+        }
+        function searchCategories() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (searchTerm === '') {
+                renderCategories(allCategories);
+                return;
+            }
+            const filtered = allCategories.filter(category => {
+                const name = category.name.toLowerCase();
+                return name.includes(searchTerm);
+            });
+            renderCategories(filtered);
+        }
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+        function openDeleteModal(id) {
+            deleteCategoryId = id;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function closeDeleteModal() {
+            deleteCategoryId = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+        function confirmDelete() {
+            if (deleteCategoryId) {
+                var token = getToken();
+                var formData = new URLSearchParams();
+                formData.append('token', token);
+                formData.append('action', 'delete');
+                formData.append('id', deleteCategoryId);
+                fetch('/ar/categorys/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData.toString()
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == "ok") {
+                            allCategories = allCategories.filter(c => c.id != deleteCategoryId);
+                            searchCategories();
+                            closeDeleteModal();
+                        }
+                    })
+                    .catch(error => {
+                        alert('خطأ في حذف التصنيف');
+                    });
+            }
+        }
+        function openEditModal(id, name, position, status) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editPosition').value = position;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('editModal').classList.add('active');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+        function saveEdit(event) {
+            event.preventDefault();
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('editName').value.trim();
+            const position = document.getElementById('editPosition').value;
+            const status = document.getElementById('editStatus').value;
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'edit');
+            formData.append('id', id);
+            formData.append('name', name);
+            formData.append('position', position);
+            formData.append('status', status);
+            fetch('/ar/categorys/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "exists") {
+                        alert("اسم التصنيف الذي أدخلته مسجل مسبقاً.");
+                    }
+                    else if (data.status == "name") {
+                        alert("الرجاء إدخال اسم التصنيف.");
+                    }
+                    else if (data.status == "position") {
+                        alert("الرجاء إدخال الموقع.");
+                    }
+                    else if (data.status == "status") {
+                        alert("الرجاء إدخال الحالة.");
+                    }
+                    else if (data.status == "ok") {
+                        const index = allCategories.findIndex(c => c.id == id);
+                        if (index !== -1) {
+                            allCategories[index] = {
+                                ...allCategories[index],
+                                name: name,
+                                position: position,
+                                status: status
+                            };
+                        }
+                        searchCategories();
+                        closeEditModal();
+                    }
+                })
+                .catch(error => {
+                    alert('خطأ في تعديل التصنيف');
+                });
+        }
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+        function saveNewCategory(event) {
+            event.preventDefault();
+            var token = getToken();
+            var formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('action', 'add');
+            formData.append('name', document.getElementById('newName').value.trim());
+            formData.append('position', document.getElementById('newPosition').value);
+            formData.append('status', document.getElementById('newStatus').value);
+            fetch('/ar/categorys/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == "exists") {
+                        alert("اسم التصنيف الذي أدخلته مسجل مسبقاً.");
+                    }
+                    else if (data.status == "name") {
+                        alert("الرجاء إدخال اسم التصنيف.");
+                    }
+                    else if (data.status == "position") {
+                        alert("الرجاء إدخال الموقع.");
+                    }
+                    else if (data.status == "status") {
+                        alert("الرجاء إدخال الحالة.");
+                    }
+                    else if (data.status == "ok") {
+                        const newCategory = {
+                            id: data.id,
+                            name: document.getElementById('newName').value.trim(),
+                            position: document.getElementById('newPosition').value,
+                            status: document.getElementById('newStatus').value
+                        };
+                        allCategories.push(newCategory);
+                        document.getElementById('newName').value = '';
+                        document.getElementById('newPosition').value = 'right';
+                        document.getElementById('newStatus').value = 'true';
+                        searchCategories();
+                        closeAddModal();
+                    }
+                })
+                .catch(error => {
+                    alert('خطأ في إضافة التصنيف');
+                });
+        }
+    </script>
+</body>
+
+</html>
