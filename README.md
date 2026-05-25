@@ -88,7 +88,7 @@ git clone https://github.com/alireza-moshfeghi/Menufy_ESP32.git
 | Setting | Value |
 |---------|-------|
 | SSID | Coffee Shop |
-| Password |  |
+| Password | (none - open network) |
 
 ### Access the Web Interface
 
