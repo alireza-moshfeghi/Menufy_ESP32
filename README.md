@@ -63,9 +63,9 @@ To access the management section, go to the login page and enter the default use
 ## ⚙️ Installation
 
 ### Step 1: Clone the repository
-\`\`\`bash
+```bash
 git clone https://github.com/alireza-moshfeghi/Menufy_ESP32.git
-\`\`\`
+```
 
 ### Step 2: Open in Arduino IDE
 - Install ESP32 board package if not already installed
