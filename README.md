@@ -1,2 +1,2 @@
-# Menufy-ESP32
+# Menufy_ESP32
 Offline menu using ESP32
